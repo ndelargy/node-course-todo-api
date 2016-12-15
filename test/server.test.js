@@ -3,9 +3,10 @@ const request = require('supertest');
 
 const {app} = require('../server/server.js');
 const {Todo} = require('../server/model/todo.js');
-
+const {ObjectID} = require('mongodb');
 const todos = [
   {
+    _id: new ObjectID(),
     "text": "spank your monkey",
   },
   {
@@ -65,6 +66,37 @@ describe('GET todos', () => {
     .expect(200)
     .expect((res) => {
       expect(res.body.todos.length).toBe(3)
+    })
+    .end(done);
+  });
+});
+
+describe('GET todos/:id', () => {
+  it('should return 404 for invalid ObjectID', (done) => {
+    request(app).get('/todos/1234512345')
+    .send()
+    .expect(404)
+    .expect((res) => {
+      expect(res.body).toEqual({});
+    })
+    .end(done);
+  });
+  it('should return 404 for unknown valid ObjectID', (done) => {
+    var hexId = new ObjectID();
+    request(app).get('/todos/' + hexId)
+    .send()
+    .expect(404)
+    .expect((res) => {
+      expect(res.body).toEqual({});
+    })
+    .end(done);
+  });
+  it('should return the correct response for known valid ObjectID', (done) => {
+    request(app).get('/todos/' + todos[0]._id.toHexString())
+    .send()
+    .expect(200)
+    .expect((res) => {
+      expect(res.body.todo.text).toBe(todos[0].text);
     })
     .end(done);
   });
