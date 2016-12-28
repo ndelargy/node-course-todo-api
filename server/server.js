@@ -9,10 +9,12 @@ var {Todo} = require('./model/todo.js');
 
 var app = express();
 
+var port = process.env.PORT || 3000;
+
 app.use(bodyParser.json());
 
-app.listen(3000, () => {
-  console.log('Started listening on port 3000');
+app.listen(port, () => {
+  console.log('Started listening on port ' + port);
 })
 
 app.post('/todos', (req, res) =>{
