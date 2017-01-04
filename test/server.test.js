@@ -10,6 +10,7 @@ const todos = [
     "text": "spank your monkey",
   },
   {
+    _id: new ObjectID(),
     "text": "spank my monkey",
   },
   {
@@ -97,6 +98,47 @@ describe('GET todos/:id', () => {
     .expect(200)
     .expect((res) => {
       expect(res.body.todo.text).toBe(todos[0].text);
+    })
+    .end(done);
+  });
+});
+
+describe('DELETE todos/:id', () => {
+  it('should delete a todo', (done) => {
+    var hexId = todos[1]._id.toHexString();
+    request(app).delete('/todos/' + hexId)
+    .expect(200)
+    .expect((res) => {
+      expect(res.body.todo.text).toBe(todos[1].text);
+    })
+    .end((err, res) => {
+      if (err) {
+        return done(err);
+      }
+      Todo.findById(hexId).then((deletedTodo) => {
+        expect(deletedTodo).toNotExist();
+        done();
+      }).catch((e) => done(e));
+    });
+  });
+
+  it('should return a 404 if todo not found', (done) => {
+    var hexId = new ObjectID();
+    request(app).delete('/todos/' + hexId)
+    .send()
+    .expect(404)
+    .expect((res) => {
+      expect(res.body).toEqual({});
+    })
+    .end(done);
+  });
+
+  it('should return a 404 if todo id not valid', (done) => {
+    request(app).delete('/todos/1234512345')
+    .send()
+    .expect(404)
+    .expect((res) => {
+      expect(res.body).toEqual({});
     })
     .end(done);
   });
