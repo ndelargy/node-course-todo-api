@@ -14,7 +14,10 @@ const todos = [
     "text": "spank my monkey",
   },
   {
+    _id: new ObjectID(),
     "text": "spank the monkey",
+    "completed": true,
+    "completedAt": 333333,
   }
 ];
 
@@ -139,6 +142,33 @@ describe('DELETE todos/:id', () => {
     .expect(404)
     .expect((res) => {
       expect(res.body).toEqual({});
+    })
+    .end(done);
+  });
+});
+
+describe('PATCH /todos:/id', () => {
+  it('should update the todo', (done) => {
+    var hexId = todos[1]._id.toHexString();
+    request(app).patch('/todos/' + hexId)
+    .send({text: "new text for test", completed: true})
+    .expect(200)
+    .expect((res) => {
+      expect(res.body.todo.text).toBe("new text for test");
+      expect(res.body.todo.completed).toBe(true);
+      expect(res.body.todo.completedAt).toBeA('number');
+    })
+    .end(done);
+  });
+  it('should clear completedAt when todo is not completed', (done) => {
+    var hexId = todos[2]._id.toHexString();
+    request(app).patch('/todos/' + hexId)
+    .send({completed: false})
+    .expect(200)
+    .expect((res) => {
+      expect(res.body.todo.text).toBe("spank the monkey");
+      expect(res.body.todo.completed).toBe(false);
+      expect(res.body.todo.completedAt).toNotExist();
     })
     .end(done);
   });
