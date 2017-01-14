@@ -72,8 +72,8 @@ UserSchema.statics.findByToken = function (token) {
 UserSchema.pre('save', function(next) {
   var user = this;
   if (user.isModified('password')) {
-    var salt = bcrypt.genSalt(10, (err, salt) => {
-      var hash = bcrypt.hash(user.password, salt, (err, hash) => {
+    bcrypt.genSalt(10, (err, salt) => {
+      bcrypt.hash(user.password, salt, (err, hash) => {
         user.password = hash;
         next();
       });
