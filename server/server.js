@@ -98,17 +98,14 @@ app.post('/users', (req, res) => {
   user.save().then(() => {
     return user.generateAuthToken();
   }).then((token) => {
-    console.log(token);
-    console.log(user);
     res.header('x-auth', token).send(user);
   }).catch((e) => {
-    console.log(e);
-    res.status(400).send(e);
+    res.status(400).send();
   })
 });
 
 app.get('/users/me', authenticate, (req, res) => {
-    res.send(req.user);
+    res.send({user: req.user});
 });
 
 module.exports = {

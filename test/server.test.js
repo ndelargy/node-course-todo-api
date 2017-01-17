@@ -3,6 +3,7 @@ const request = require('supertest');
 
 const {app} = require('../server/server');
 const {Todo} = require('../server/model/todo');
+const {User} = require('../server/model/user');
 const {ObjectID} = require('mongodb');
 
 const {users, populateUsers, todos, populateTodos} = require('./seed/seed');
@@ -156,4 +157,81 @@ describe('PATCH /todos:/id', () => {
     })
     .end(done);
   });
+});
+
+
+describe('GET /users/me', () => {
+  it('should return the user if authenticated.', (done) => {
+     request(app).get('/users/me')
+     .set('x-auth', users[0].tokens[0].token)
+     .expect(200)
+     .expect((res) => {
+       expect(res.body.user._id).toBe(users[0]._id.toString());
+       expect(res.body.user.email).toBe(users[0].email);
+     })
+     .end(done);
+  });
+
+  it('should return 401 if the user is not authenticated.', (done) => {
+    request(app).get('/users/me')
+    .expect(401)
+    .expect((res) => {
+      expect(res.body).toEqual({});
+    })
+    .end(done);
+  });
+
+});
+
+describe('POST /users', () => {
+  it('should create new user', (done) => {
+    var email = 'example@example.com';
+    var password = 'password123';
+    request(app)
+    .post('/users')
+    .send({email, password})
+    .expect(200)
+    .expect((res) => {
+      expect(res.headers['x-auth']).toExist();
+      expect(res.body._id).toExist();
+      expect(res.body.email).toBe(email);
+    })
+    .end((err) => {
+      if (err) {
+        done(err);
+      }
+      User.findOne({email}).then((user) => {
+        expect(user).toExist();
+        expect(user.password).toNotBe(users[0].password);
+        done();
+      }).catch((e) => done(e));
+    });
+  });
+
+  it('should not create new user if duplicate email', (done) => {
+    var email = 'notanemail';
+    var password = '';
+    request(app)
+    .post('/users')
+    .send({email, password})
+    .expect(400)
+    .expect((res) => {
+      expect(res.body).toEqual({});
+      done();
+    }).catch((e) => done(e));
+  });
+
+  it('should return validation errors if invalid request', (done) => {
+    var email = 'sammy@wuut.com';
+    var password = 'testpassword23';
+    request(app)
+    .post('/users')
+    .send({email, password})
+    .expect(400)
+    .expect((res) => {
+      expect(res.body).toEqual({});
+      done();
+    }).catch((e) => done(e));
+  });
+
 });
