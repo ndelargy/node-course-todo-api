@@ -108,6 +108,18 @@ app.get('/users/me', authenticate, (req, res) => {
     res.send({user: req.user});
 });
 
+app.post('/users/login', (req, res) => {
+  var email = req.body.email;
+  var password = req.body.password;
+  User.findByCredentials(email, password).then((user) => {
+    user.generateAuthToken().then((token) => {
+      res.header('x-auth', token).send(user);
+    });
+  }).catch((e) => {
+    res.status(400).send(e);
+  })
+});
+
 module.exports = {
   app
 }

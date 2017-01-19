@@ -19,7 +19,7 @@ var UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minLength: 1,
+    minLength: 8,
   },
   tokens: [{
     access: {
@@ -50,6 +50,25 @@ UserSchema.methods.toJSON = function () {
   var userObject = user.toObject();
 
   return _.pick(userObject, ['_id', 'email']);
+}
+
+UserSchema.statics.findByCredentials = function (email, password) {
+  var User = this;
+  return User.findOne({email}).then((user) => {
+    if (!user) {
+      return Promise.reject();
+    }
+    return new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, (err, result) => {
+        if (res) {
+          resolve(user);
+        }
+        else {
+          reject();
+        }
+      });
+    });
+  });
 }
 
 UserSchema.statics.findByToken = function (token) {
