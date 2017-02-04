@@ -15,6 +15,7 @@ describe('POST todos', () => {
   it('should create a new todo', (done) => {
      var text = 'testing adding a new todo';
      request(app).post('/todos')
+     .set('x-auth', users[0].tokens[0].token)
      .send({text})
      .expect(200)
      .expect((res) => {
@@ -34,6 +35,7 @@ describe('POST todos', () => {
 
   it('should not create a new todo with invalid data', (done) => {
     request(app).post('/todos')
+    .set('x-auth', users[0].tokens[0].token)
     .send({})
     .expect(400)
     .end((err, res) => {
@@ -49,12 +51,13 @@ describe('POST todos', () => {
 });
 
 describe('GET todos', () => {
-  it('should get all todos', (done) => {
+  it('should get all my todos', (done) => {
     request(app).get('/todos')
+    .set('x-auth', users[0].tokens[0].token)
     .send()
     .expect(200)
     .expect((res) => {
-      expect(res.body.todos.length).toBe(3)
+      expect(res.body.todos.length).toBe(2)
     })
     .end(done);
   });
@@ -253,7 +256,7 @@ describe('POST /users/login', () => {
           return done(err);
         }
         User.findById(users[1]._id).then((user) => {
-          expect(user.tokens[0]).toInclude({
+          expect(user.tokens[1]).toInclude({
             access: 'auth',
             token: res.headers['x-auth']
           });
@@ -278,7 +281,7 @@ describe('POST /users/login', () => {
           return done(err);
         }
         User.findById(users[1]._id).then((user) => {
-          expect(user.tokens.length).toBe(0);
+          expect(user.tokens.length).toBe(1);
           done();
         }).catch((e) => done(e));
       });

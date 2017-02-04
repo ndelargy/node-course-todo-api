@@ -21,7 +21,13 @@ const users = [
   {
     _id: userTwoId,
     email: 'annie@wuut.com',
-    password: 'wassword'
+    password: 'wassword',
+    tokens: [
+      {
+        access: 'auth',
+        token: jwt.sign({_id: userTwoId, access: 'auth'}, 'abc123').toString()
+      }
+    ]
   }
 ]
 
@@ -29,16 +35,19 @@ const todos = [
   {
     _id: new ObjectID(),
     "text": "spank your monkey",
+    _creator: userOneId
   },
   {
     _id: new ObjectID(),
     "text": "spank my monkey",
+    _creator: userOneId
   },
   {
     _id: new ObjectID(),
     "text": "spank the monkey",
     "completed": true,
     "completedAt": 333333,
+    _creator: userTwoId
   }
 ];
 
